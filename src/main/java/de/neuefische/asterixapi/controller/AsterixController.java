@@ -1,30 +1,64 @@
 package de.neuefische.asterixapi.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import de.neuefische.asterixapi.repository.CharacterRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import de.neuefische.asterixapi.model.Character;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/asterix")
+@RequestMapping("/asterix/characters")
 public class AsterixController {
 
-    @GetMapping("/characters")
-    public List<Character> getAllCharacters() {
-        return List.of(
-                new Character("1", "Asterix", 35, "Warrior"),
-                new Character("2", "Obelix", 35, "Supplier"),
-                new Character("3", "Miraculix", 60, "Druid"),
-                new Character("4", "Majestix", 60, "Chief"),
-                new Character("5", "Troubadix", 25, "Bard"),
-                new Character("6", "Gutemine", 35, "Chiefs Wife"),
-                new Character("7", "Idefix", 5, "Dog"),
-                new Character("8", "Geriatrix", 70, "Retiree"),
-                new Character("9", "Automatix", 35, "Smith"),
-                new Character("10", "Grockelix", 35, "Fisherman")
-        );
+    CharacterRepository repo;
+
+    @Autowired
+    public AsterixController(CharacterRepository repo) {
+        this.repo = repo;
     }
+
+    @GetMapping()
+    public List<Character> getAllCharacters() {
+        return repo.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Character> getCharacterById(@PathVariable String id) {
+        return repo.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public Character addCharacter(@RequestBody Character character) {
+        return repo.save(character);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Character> updateCharacter(@PathVariable String id, @RequestBody Character character) {
+        if (!repo.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        Character oldChar = getCharacterById(id).getBody();
+
+        Character updatedChar = repo.save(oldChar
+                .withName(character.name())
+                .withAge(character.age())
+                .withProfession(character.profession()));
+
+        return ResponseEntity.ok(updatedChar);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCharacter(@PathVariable String id) {
+        if (!repo.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        repo.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
