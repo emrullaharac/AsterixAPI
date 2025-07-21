@@ -21,8 +21,26 @@ public class AsterixController {
     }
 
     @GetMapping()
-    public List<Character> getAllCharacters() {
-        return repo.findAll();
+    public List<Character> getAllCharacters(
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String profession) {
+            if (name != null && profession != null) {
+                return repo.findByNameAndProfession(name, profession);
+            } else if (name != null) {
+                return repo.findByName(name);
+            } else if (profession != null) {
+                return repo.findByProfession(profession);
+            }
+            return repo.findAll();
+    }
+
+    @GetMapping("/average-age")
+    public double getAverageAgeByProfession(@RequestParam String profession) {
+        List<Character> characters = repo.findByProfession(profession);
+        return characters.stream()
+                .mapToInt(Character::age)
+                .average()
+                .orElse(0.0);
     }
 
     @GetMapping("/{id}")
