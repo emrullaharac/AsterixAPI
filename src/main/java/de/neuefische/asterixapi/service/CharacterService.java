@@ -1,5 +1,6 @@
 package de.neuefische.asterixapi.service;
 
+import de.neuefische.asterixapi.dto.CharacterDto;
 import de.neuefische.asterixapi.model.Character;
 import de.neuefische.asterixapi.repository.CharacterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,12 @@ import java.util.List;
 public class CharacterService {
 
     CharacterRepository repo;
+    IdService idService;
 
     @Autowired
-    public CharacterService(CharacterRepository repo) {
+    public CharacterService(CharacterRepository repo, IdService idService) {
         this.repo = repo;
+        this.idService = idService;
     }
 
     public List<Character> getAllCharacters(String name, String profession) {
@@ -43,8 +46,13 @@ public class CharacterService {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    public Character addCharacter(Character character) {
-        return repo.save(character);
+    public Character addCharacter(CharacterDto characterDto) {
+        Character newChar = new Character(
+                idService.randomId(),
+                characterDto.name(),
+                characterDto.age(),
+                characterDto.profession());
+        return repo.save(newChar);
     }
 
     public ResponseEntity<Character> updateCharacter(String id, Character character) {
