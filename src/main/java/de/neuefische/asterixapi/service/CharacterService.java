@@ -1,6 +1,7 @@
 package de.neuefische.asterixapi.service;
 
 import de.neuefische.asterixapi.dto.CharacterDto;
+import de.neuefische.asterixapi.dto.CharacterUpdateDto;
 import de.neuefische.asterixapi.model.Character;
 import de.neuefische.asterixapi.repository.CharacterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,18 +56,17 @@ public class CharacterService {
         return repo.save(newChar);
     }
 
-    public ResponseEntity<Character> updateCharacter(String id, Character character) {
-        if (!repo.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        Character oldChar = getCharacterById(id).getBody();
-
-        Character updatedChar = repo.save(oldChar
-                .withName(character.name())
-                .withAge(character.age())
-                .withProfession(character.profession()));
-
-        return ResponseEntity.ok(updatedChar);
+    public ResponseEntity<Character> updateCharacter(String id, CharacterUpdateDto updateDto) {
+        return repo.findById(id)
+                .map(oldChar -> {
+                    Character updated = oldChar
+                            .withName(updateDto.name())
+                            .withAge(updateDto.age())
+                            .withProfession(updateDto.profession());
+                    repo.save(updated);
+                    return ResponseEntity.ok(updated);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     public ResponseEntity<Void> deleteCharacter(String id) {

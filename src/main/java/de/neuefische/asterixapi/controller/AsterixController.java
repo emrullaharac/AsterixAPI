@@ -1,6 +1,7 @@
 package de.neuefische.asterixapi.controller;
 
 import de.neuefische.asterixapi.dto.CharacterDto;
+import de.neuefische.asterixapi.dto.CharacterUpdateDto;
 import de.neuefische.asterixapi.model.Character;
 import de.neuefische.asterixapi.service.CharacterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,8 @@ public class AsterixController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Character> updateCharacter(@PathVariable String id, @RequestBody Character character) {
-        return service.updateCharacter(id, character);
+    public ResponseEntity<Character> updateCharacter(@PathVariable String id, @RequestBody CharacterUpdateDto updateDto) {
+        return service.updateCharacter(id, updateDto);
     }
 
     @DeleteMapping("/{id}")
